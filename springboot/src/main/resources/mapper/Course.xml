@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.CourseMapper">
+
+    <select id="list" resultType="com.example.springboot.entity.Course">
+        select * from course
+        <where>
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+            <if test="level != null and level != ''">
+                and level = #{level}
+            </if>
+            <if test="scenario != null and scenario != ''">
+                and scenario = #{scenario}
+            </if>
+        </where>
+        order by createtime desc
+    </select>
+
+    <select id="findById" resultType="com.example.springboot.entity.Course">
+        select * from course where id = #{id}
+    </select>
+
+    <update id="incrementViewCount" parameterType="java.lang.Integer">
+        update course set view_count = view_count + 1 where id = #{id}
+    </update>
+
+    <update id="incrementCollectCount" parameterType="java.lang.Integer">
+        update course set collect_count = collect_count + 1 where id = #{id}
+    </update>
+
+    <update id="decrementCollectCount" parameterType="java.lang.Integer">
+        update course set collect_count = collect_count - 1 where id = #{id}
+    </update>
+
+    <select id="findMyCollections" resultType="com.example.springboot.entity.Course">
+        select c.* from course c
+        join collection col on c.id = col.target_id
+        where col.user_id = #{userId} and col.target_type = 'course'
+        order by col.createtime desc
+    </select>
+
+    <select id="recommend" resultType="com.example.springboot.entity.Course">
+        select c.* from course c
+        where c.id not in (
+            select course_id from study_record where user_id = #{userId}
+        ) and c.id not in (
+            select target_id from collection where user_id = #{userId} and target_type = 'course'
+        )
+        and (
+            c.type in (
+                select type from course where id in (
+                    select course_id from study_record where user_id = #{userId}
+                    union
+                    select target_id from collection where user_id = #{userId} and target_type = 'course'
+                )
+            )
+            or (
+                (select count(*) from study_record where user_id = #{userId}) + 
+                (select count(*) from collection where user_id = #{userId} and target_type = 'course')
+            ) = 0
+        )
+        order by c.view_count desc
+        limit 5
+    </select>
+
+    <insert id="save" parameterType="com.example.springboot.entity.Course">
+        insert into course (title, description, type, level, scenario, cover, video_url, content, view_count, collect_count, createtime, updatetime)
+        values (#{title}, #{description}, #{type}, #{level}, #{scenario}, #{cover}, #{videoUrl}, #{content}, 0, 0, now(), now())
+    </insert>
+
+    <update id="update" parameterType="com.example.springboot.entity.Course">
+        update course set
+        title = #{title},
+        description = #{description},
+        type = #{type},
+        level = #{level},
+        scenario = #{scenario},
+        cover = #{cover},
+        video_url = #{videoUrl},
+        content = #{content},
+        updatetime = now()
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from course where id = #{id}
+    </delete>
+
+    <select id="statsByType" resultType="java.util.Map">
+        select type as name, count(*) as value from course group by type
+    </select>
+
+    <select id="listCoursesForExport" resultType="java.util.Map">
+        select id, title, type, level, view_count as viewCount, collect_count as collectCount from course order by id desc
+    </select>
+
+</mapper>

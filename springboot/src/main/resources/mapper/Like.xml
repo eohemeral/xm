@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.LikeMapper">
+
+    <insert id="save" parameterType="com.example.springboot.entity.Like">
+        insert into `like` (user_id, target_id, target_type, createtime)
+        values (#{userId}, #{targetId}, #{targetType}, now())
+    </insert>
+
+    <delete id="delete">
+        delete from `like` where user_id = #{userId} and target_id = #{targetId} and target_type = #{targetType}
+    </delete>
+
+    <select id="findByUserIdAndTargetIdAndTargetType" resultType="com.example.springboot.entity.Like">
+        select * from `like` where user_id = #{userId} and target_id = #{targetId} and target_type = #{targetType}
+    </select>
+
+</mapper>

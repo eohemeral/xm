@@ -1,0 +1,30 @@
+package com.example.springboot.common;
+
+import com.example.springboot.utils.TokenUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class JwtInterceptor implements HandlerInterceptor {
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        String token = request.getHeader("token");
+        if (token == null) {
+            token = request.getParameter("token");
+        }
+        if (token != null) {
+            boolean verify = TokenUtils.verifyToken(token);
+            if (verify) {
+                return true;
+            }
+        }
+        response.setStatus(401);
+        response.setContentType("application/json;charset=utf-8");
+        response.getWriter().write("{\"code\": \"401\", \"msg\": \"未授权访问\"}");
+        return false;
+    }
+}

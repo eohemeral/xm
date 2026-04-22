@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.PostMapper">
+
+    <select id="list" resultType="com.example.springboot.entity.Post">
+        select p.*, u.nickname as userNickname from post p
+        left join user u on p.user_id = u.id
+        <where>
+            <if test="type != null and type != ''">
+                and p.type = #{type}
+            </if>
+        </where>
+        order by p.createtime desc
+    </select>
+
+    <select id="adminList" resultType="com.example.springboot.entity.Post">
+        select p.*, u.nickname as userNickname from post p
+        left join user u on p.user_id = u.id
+        order by p.createtime desc
+    </select>
+
+    <select id="detail" resultType="java.util.Map">
+        select p.*, u.nickname as userNickname,
+        (select count(*) from comment where post_id = p.id) as commentCount,
+        (select count(*) from `like` where target_id = p.id and target_type = 'post') as likeCount
+        from post p
+        join user u on p.user_id = u.id
+        where p.id = #{id}
+    </select>
+
+    <update id="incrementViewCount" parameterType="java.lang.Integer">
+        update post set view_count = view_count + 1 where id = #{id}
+    </update>
+
+    <update id="incrementLikeCount" parameterType="java.lang.Integer">
+        update post set like_count = like_count + 1 where id = #{id}
+    </update>
+
+    <update id="decrementLikeCount" parameterType="java.lang.Integer">
+        update post set like_count = like_count - 1 where id = #{id}
+    </update>
+
+    <update id="incrementCommentCount" parameterType="java.lang.Integer">
+        update post set comment_count = comment_count + 1 where id = #{postId}
+    </update>
+
+    <update id="decrementCommentCount" parameterType="java.lang.Integer">
+        update post set comment_count = comment_count - 1 where id = #{postId}
+    </update>
+
+    <insert id="save" parameterType="com.example.springboot.entity.Post">
+        insert into post (user_id, title, content, type, cover, video_url, view_count, like_count, comment_count, createtime, updatetime)
+        values (#{userId}, #{title}, #{content}, #{type}, #{cover}, #{videoUrl}, 0, 0, 0, now(), now())
+    </insert>
+
+    <update id="update" parameterType="com.example.springboot.entity.Post">
+        update post set
+        title = #{title},
+        content = #{content},
+        type = #{type},
+        cover = #{cover},
+        video_url = #{videoUrl},
+        updatetime = now()
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from post where id = #{id}
+    </delete>
+
+    <select id="statsByType" resultType="java.util.Map">
+        select type as name, count(*) as value from post group by type
+    </select>
+
+    <select id="statsByTrend" resultType="java.util.Map">
+        select date_format(createtime, '%Y-%m-%d') as date, count(*) as value from post group by date_format(createtime, '%Y-%m-%d') order by date
+    </select>
+
+    <select id="findMyPosts" resultType="com.example.springboot.entity.Post">
+        select * from post where user_id = #{userId} order by createtime desc
+    </select>
+
+    <select id="findMyCollections" resultType="com.example.springboot.entity.Post">
+        select p.*, u.nickname as userNickname from post p
+        join user u on p.user_id = u.id
+        join collection col on p.id = col.target_id
+        where col.user_id = #{userId} and col.target_type = 'post'
+        order by col.createtime desc
+    </select>
+
+</mapper>

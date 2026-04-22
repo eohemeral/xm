@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.CommentMapper">
+
+    <select id="findByPostId" resultType="com.example.springboot.entity.Comment">
+        select c.*, u.nickname as userNickname
+        from comment c
+        join user u on c.user_id = u.id
+        where c.post_id = #{postId}
+        order by c.createtime asc
+    </select>
+
+    <select id="findById" resultType="com.example.springboot.entity.Comment">
+        select * from comment where id = #{id}
+    </select>
+
+    <insert id="save" parameterType="com.example.springboot.entity.Comment">
+        insert into comment (post_id, user_id, content, createtime, updatetime)
+        values (#{postId}, #{userId}, #{content}, now(), now())
+    </insert>
+
+    <update id="update" parameterType="com.example.springboot.entity.Comment">
+        update comment set
+        content = #{content},
+        updatetime = now()
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from comment where id = #{id}
+    </delete>
+
+    <select id="findMyComments" resultType="java.util.Map">
+        select c.*, p.title as postTitle
+        from comment c
+        join post p on c.post_id = p.id
+        where c.user_id = #{userId}
+        order by c.createtime desc
+    </select>
+
+</mapper>

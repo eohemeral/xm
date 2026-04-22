@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.UserMapper">
+
+    <select id="findByUsername" resultType="com.example.springboot.entity.User">
+        select * from user where username = #{username}
+    </select>
+
+    <select id="findById" resultType="com.example.springboot.entity.User">
+        select * from user where id = #{id}
+    </select>
+
+    <insert id="save" parameterType="com.example.springboot.entity.User">
+        insert into user (username, password, nickname, email, phone, avatar, status, createtime, updatetime)
+        values (#{username}, #{password}, #{nickname}, #{email}, #{phone}, #{avatar}, #{status}, now(), now())
+    </insert>
+
+    <update id="update" parameterType="com.example.springboot.entity.User">
+        update user set
+        nickname = #{nickname},
+        email = #{email},
+        phone = #{phone},
+        avatar = #{avatar},
+        status = #{status},
+        updatetime = now()
+        where id = #{id}
+    </update>
+
+    <update id="updatePassword" parameterType="com.example.springboot.entity.User">
+        update user set
+        password = #{password},
+        updatetime = now()
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from user where id = #{id}
+    </delete>
+
+    <select id="list" resultType="com.example.springboot.entity.User">
+        select * from user order by id desc
+    </select>
+
+    <select id="listUsersForExport" resultType="java.util.Map">
+        select id, username, email, status, createtime as createdAt from user order by id desc
+    </select>
+
+</mapper>
